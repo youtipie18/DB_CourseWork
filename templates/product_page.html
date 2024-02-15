@@ -1,0 +1,89 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block head %}
+{% include "header.html" %}
+{% endblock %}
+
+{% block content %}
+<section class="vh-100 gradient-custom">
+    <div class="container py-5">
+        <div class="row d-flex justify-content-center h-100">
+            <div class="col-6">
+                <!--CAROUSEL-->
+                <div id="carouselExampleIndicators" class="carousel carousel-dark slide">
+                    <div class="carousel-indicators">
+                        {% for i in range(product.images|length) %}
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{i}}"
+                                class="{{'active' if i == 0 else ''}}" aria-current="{{'true' if i == 0 else ''}}"
+                                aria-label="Slide {{i+1}}"></button>
+                        {% endfor %}
+                    </div>
+                    <div class="carousel-inner">
+                        {% for i in range(product.images|length) %}
+                        <div class="carousel-item {{ 'active' if i==0 else ''}}">
+                            <img src="static/product_images/{{product.images[i].name}}"
+                                 class="img-thumbnail ms-5 d-block w-100"
+                                 style="width: 800px; height: 400px; object-fit: contain;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+                            data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+                            data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+            <div class="col-6">
+                <h2 class="fw-bold mb-2 text-uppercase text-center">{{ product.name }}</h2>
+                <h3 class="fw-bold mb-2 text-uppercase text-center mt-5">Price: {{product.price}}$</h3>
+                <div class="text-center">
+                    <form method="POST">
+                        <input class="mb-2" type="number" id="quantity" value=1 min=1 name="quantity"><br>
+                        {% if not current_user.is_authenticated %}
+                            <button type="submit" class="btn btn-dark' btn-lg"
+                                    style="--bs-btn-padding-y: .5rem; --bs-btn-padding-x: 2rem;" disabled>Add to cart
+                            </button>
+                        {% else %}
+                            {% if product.id in current_user.cart|map(attribute='product_id') %}
+                                <button type="submit" class="btn btn-success btn-lg"
+                                        style="--bs-btn-padding-y: .5rem; --bs-btn-padding-x: 2rem;" disabled>In cart
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-dark btn-lg"
+                                        style="--bs-btn-padding-y: .5rem; --bs-btn-padding-x: 2rem;">Add to cart
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <h1 class="fw-bold text-center mt-5">Description</h1>
+            <div style="padding: 0 10% 0 10%; font-size: 2rem">
+                {{ product.description|safe }}
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <h1 class="fw-bold text-center mt-5">Characteristics</h1>
+            {% for part in product.parts %}
+            <p style="padding: 0 10% 0 10%; font-size: 2rem">
+                {{ part.category.name }}: {{ part.name }} <i class="fa-solid fa-circle-question fa-sm tt"
+                                                             data-bs-placement="bottom"
+                                                             title="{% for item in part.characteristics %}{{ item.__repr__()+'\n' }}{% endfor %}"
+                                                             style="color: #3f4350;"></i>
+            </p>
+            {% endfor %}
+        </div>
+    </div>
+    {% include "footer.html" %}
+</section>
+{% endblock %}

@@ -1,0 +1,259 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block head %}
+{% include "header.html" %}
+{% endblock %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<!--MODALS-->
+{% for category in categories %}
+<div class="modal fade modal-lg" id="Modal{{''.join(category.name.split(' '))}}" tabindex="-1"
+     aria-labelledby="Modal{{''.join(category.name.split(' '))}}Label"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="Modal{{''.join(category.name.split(' '))}}Label">Select
+                    {{category.name}}</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <nav class="navbar bg-body-tertiary bg-dark p-3" style="position: sticky; top: 0px; z-index: 9999;">
+                    <div class="container-fluid">
+                        <form role="search">
+                            <div class="d-flex">
+                                <i class="fa-solid fa-magnifying-glass fa-lg mt-3 me-3" style="color: #ffffff;"></i>
+                                <input class="form-control me-2 SearchPart w-50" type="search" placeholder="Search"
+                                       aria-label="Search">
+                                <label class="mt-2 me-2 text-white">Range:</label>
+                                <input type="number" class="form-control me-2 SearchPart w-25" placeholder="Min Price"
+                                       aria-label="minPrice" min="0">
+                                <input type="number" class="form-control me-2 SearchPart w-25" placeholder="Max Price"
+                                       aria-label="maxPrice" min="0">
+                            </div>
+                        </form>
+                    </div>
+                </nav>
+                <div class="p-3">
+                    {% for part in category.parts %}
+                    <div class="card p-2 mt-2 mb-2">
+                        <div id="{{''.join(category.name.split(' '))}}_part{{part.id}}" class="row">
+                            <div class="col-5">
+                                <div id="{{''.join(category.name.split(' '))}}_part{{part.id}}Carousel"
+                                     class="carousel carousel-dark slide">
+                                    <div class="carousel-indicators">
+                                        {% for i in range(part.images|length) %}
+                                        <button type="button"
+                                                data-bs-target="#{{''.join(category.name.split(' '))}}_part{{part.id}}Carousel"
+                                                data-bs-slide-to="{{i}}"
+                                                class="{{'active' if i == 0 else ''}}"
+                                                aria-current="{{'true' if i == 0 else ''}}"
+                                                aria-label="Slide {{i+1}}"></button>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="carousel-inner">
+                                        {% for i in range(part.images|length) %}
+                                        <div class="carousel-item {{ 'active' if i==0 else ''}}">
+                                            <img src="static/part_images/{{part.images[i].name}}"
+                                                 class="img-thumbnail d-block w-100"
+                                                 style="width: 200px; height: 200px; object-fit: contain;">
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <button class="carousel-control-prev" type="button"
+                                            data-bs-target="#{{''.join(category.name.split(' '))}}_part{{part.id}}Carousel"
+                                            data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button"
+                                            data-bs-target="#{{''.join(category.name.split(' '))}}_part{{part.id}}Carousel"
+                                            data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-5" data-id="part-info">
+                                <h2>{{part.name}}</h2>
+                                {% for characteristic in part.characteristics %}
+                                <label>{{ characteristic }}</label>
+                                <label hidden>{{ characteristic.value }}</label>
+                                {% endfor %}
+                            </div>
+                            <div class="col-2 text-center">
+                                <label class="mt-5" style="font-size: 1.2rem; color: #ed1c1c;" data-id="part-info">{{part.price}}$</label>
+                                <button class="btn btn-dark btn-md mt-5"
+                                        data-value="{{''.join(category.name.split(' '))+'_'+part.id|string}}"
+                                        title="select_part">Select
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 style="color: white;" class="display-4 fw-bolder text-center mt-5">Welcome to PC creator</h1>
+            <p class="lead fw-normal text-white-50 mb-0">Please select parts you want to be in your dream
+                PC!</p>
+        </div>
+    </div>
+</header>
+
+<form method="post" action="{{ url_for('add_user_product') }}" enctype="multipart/form-data">
+    <section>
+        <!--    <section class="vh-100 gradient-custom">-->
+        <div class="container py-5">
+            <div class="row d-flex justify-content-center">
+                <div class="row row-cols-sm-1 row-cols-md-2 row-cols-lg-3">
+                    {% for category in categories %}
+                    <div class="col d-flex justify-content-center mt-3 mb-3">
+                        <button type="button" class="btn btn-lg btn-outline-dark" style="width:100%; display: block;"
+                                data-bs-toggle="modal"
+                                data-bs-target="#Modal{{''.join(category.name.split(' '))}}">Select
+                            {{category.name}}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center">
+                    <div class="text-danger m-3"></div>
+                    <div class="row ps-5 pe-5">
+                        <div class="col-6">
+                            <p class="lead fw-normal">Choose quantity
+                                <input style="width: 5rem;" class="mb-2" type="number" id="quantity" value=1 min=1
+                                       name="quantity">
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <input type="hidden" name="price"/>
+                            <p id="price" class="lead fw-normal" style="color: green;">Total price: 50.0$ <i
+                                    class="fa-solid fa-circle-question fa-sm tt"
+                                    data-bs-placement="bottom"
+                                    title="Our service takes 50$ fee for building user-made PC"
+                                    style="color: #3f4350;"></i></p>
+                        </div>
+                    </div>
+                    <input class="btn btn-btn btn-dark btn-lg" id="submit" name="submit" type="submit"
+                           value="Add to cart">
+                </div>
+            </div>
+        </div>
+    </section>
+    <input type="hidden" name="selected_parts" id="selectedParts" value="">
+</form>
+{% include "footer.html" %}
+
+
+<script>
+    $(document).ready(function () {
+      const selectedParts = [];
+      let quantity = 1;
+
+      $("#quantity").on("input", function () {
+          quantity = $(this).val();
+          updateTotalPrice();
+        });
+
+      $(".SearchPart").on("input", function () {
+        const form = $(this).parent();
+        const searchInput = form.find('[aria-label="Search"]');
+        const value = searchInput.val().toLowerCase();
+
+        const minPrice = parseFloat(form.find('[aria-label="minPrice"]').val()) || 0;
+        const maxPrice = parseFloat(form.find('[aria-label="maxPrice"]').val()) || Number.MAX_SAFE_INTEGER;
+
+        const modal = searchInput.closest(".modal");
+
+        if (modal.length === 0) {
+          return;
+        }
+
+        const part_cards = modal.find(".card");
+
+        part_cards.each(function () {
+          const part = $(this);
+          const part_data = part.find('[data-id="part-info"]');
+          const partPrice = parseFloat(part.find('[data-id="part-info"]').last().text()) || 0;
+
+          const isVisible = part_data.text().toLowerCase().replace(/\s+/g, ' ').trim().includes(value)
+            && partPrice >= minPrice && partPrice <= maxPrice;
+          if (isVisible) {
+            part.show();
+          } else {
+            part.hide();
+          }
+        });
+      });
+
+      $('[title="select_part"]').on("click", function () {
+        const clickedButton = $(this);
+        const modal = clickedButton.closest('.modal');
+        const buttonValue = clickedButton.data("value");
+
+        modal.find('[title="select_part"]').removeClass("btn-primary").addClass("btn-dark").text("Select").attr("disabled", false);
+        clickedButton.removeClass("btn-dark").addClass("btn-primary").text("Selected").attr("disabled", true);
+        $('[data-bs-target="#Modal'+buttonValue.split("_")[0]+'"]').removeClass("btn-outline-dark").addClass("btn-success");
+
+
+        for (let i = 0; i < selectedParts.length; i++) {
+            if(selectedParts[i].split("_")[0].includes(buttonValue.split("_")[0])){
+                selectedParts.splice(i, 1);
+            }
+        }
+        selectedParts.push(buttonValue);
+
+        $("#selectedParts").val(selectedParts.join(";"));
+        updateTotalPrice();
+      });
+
+      $("form").submit(function(event) {
+        $(".text-danger").remove();
+
+        if (selectedParts.length != {{categories|length}}) {
+          displayError("You have to select all parts!");
+        }
+
+        if ($(".text-danger").length > 0) {
+          event.preventDefault();
+          return;
+        }
+      });
+
+      function displayError(message) {
+        const errorElement = $("<p>").addClass("text-danger text-center").text(message);
+        $("#submit").before(errorElement);
+      }
+      function updateTotalPrice() {
+        let totalPrice = 0;
+
+        for (let i = 0; i < selectedParts.length; i++) {
+          const partInfo = selectedParts[i].split("_");
+          const categoryName = partInfo[0];
+          const partId = partInfo[1];
+
+          const price = $(`div #${categoryName}_part${partId} [data-id="part-info"]`).last().text();
+          totalPrice += parseFloat(price);
+        }
+        totalPrice = totalPrice * quantity + 50;
+
+        $("#price").text(`Total price: ${totalPrice.toFixed(1)}$`);
+        $("[name='price']").val(totalPrice.toFixed(1));
+      }
+    });
+
+</script>
+{% endblock %}

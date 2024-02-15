@@ -1,0 +1,12 @@
+.idea/
+
+__pycache__/
+
+part_images/
+
+product_images/
+
+product_images.bak/
+
+*.db
+*.db.bak

@@ -1,0 +1,273 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block head %}
+{% include "header.html" %}
+{% endblock %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<!--MODALS-->
+{% for category in categories %}
+<div class="modal fade modal-lg" id="Modal{{''.join(category.name.split(' '))}}" tabindex="-1"
+     aria-labelledby="Modal{{''.join(category.name.split(' '))}}Label"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="Modal{{''.join(category.name.split(' '))}}Label">Select
+                    {{category.name}}</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <nav class="navbar bg-body-tertiary bg-dark p-3" style="position: sticky; top: 0px; z-index: 9999;">
+                    <div class="container-fluid">
+                        <form class="d-flex" role="search">
+                            <i class="fa-solid fa-magnifying-glass fa-lg mt-3 me-3" style="color: #ffffff;"></i>
+                            <input class="form-control me-2 SearchPart" type="search" placeholder="Search"
+                                   aria-label="Search">
+                        </form>
+                    </div>
+                </nav>
+                <div class="p-3">
+                    {% for part in category.parts %}
+                    <div class="card p-2 mt-2 mb-2">
+                        <div class="row">
+                            <div class="col-5">
+                                <div id="{{''.join(category.name.split(' '))}}_part{{part.id}}Carousel"
+                                     class="carousel carousel-dark slide">
+                                    <div class="carousel-indicators">
+                                        {% for i in range(part.images|length) %}
+                                        <button type="button"
+                                                data-bs-target="#{{''.join(category.name.split(' '))}}_part{{part.id}}Carousel"
+                                                data-bs-slide-to="{{i}}"
+                                                class="{{'active' if i == 0 else ''}}"
+                                                aria-current="{{'true' if i == 0 else ''}}"
+                                                aria-label="Slide {{i+1}}"></button>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="carousel-inner">
+                                        {% for i in range(part.images|length) %}
+                                        <div class="carousel-item {{ 'active' if i==0 else ''}}">
+                                            <img src="static/part_images/{{part.images[i].name}}"
+                                                 class="img-thumbnail d-block w-100"
+                                                 style="width: 200px; height: 200px; object-fit: contain;">
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <button class="carousel-control-prev" type="button"
+                                            data-bs-target="#{{''.join(category.name.split(' '))}}_part{{part.id}}Carousel"
+                                            data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button"
+                                            data-bs-target="#{{''.join(category.name.split(' '))}}_part{{part.id}}Carousel"
+                                            data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-5" data-id="part-info">
+                                <h2>{{part.name}}</h2>
+                                {% for characteristic in part.characteristics|sort(attribute='characteristic_name.name')
+                                %}
+                                <label>{{ characteristic }}</label><br>
+                                {% endfor %}
+                            </div>
+                            <div class="col-2 text-center">
+                                <label class="mt-5" style="font-size: 1.2rem; color: #ed1c1c;" data-id="part-info">{{part.price}}$</label>
+                                <button class="btn btn-dark btn-md mt-5"
+                                        data-value="{{''.join(category.name.split(' '))+'_'+part.id|string}}"
+                                        title="select_part">Select
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<form method="post" action="{{ url_for('update', id=product_id) }}" enctype="multipart/form-data" novalidate>
+    <section class="vh-100 gradient-custom">
+        <div class="container py-5">
+            <div class="row d-flex justify-content-center h-100">
+                <div class="col-6">
+                    <h5 class="fw-bold mb-2 text-center mt-2">Select images:</h5>
+                    {{ form.hidden_tag() }}
+                    {{form.images(class="upload-img", style="display: none")}}
+                    <label class="btn" for="{{ form.images.id }}"><img
+                            src="{{ images[0] }}"
+                            class="img-thumbnail"
+                            style="width: 800px;
+                                   height: 400px;
+                                   object-fit: cover;"
+                            id="upload_image"></label>
+                </div>
+                <div class="col-6">
+                    <h2 class="fw-bold mb-2 text-uppercase text-center">{{form.name.label}}</h2>
+                    <h2 class="fw-bold mb-2 text-uppercase text-center">{{form.name}}</h2>
+
+                    <h3 class="fw-bold mb-2 text-uppercase text-center mt-5">Price: {{form.price(size=5)}}$</h3>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-center">
+                <h1 class="fw-bold text-center mt-5">Description</h1>
+                <p style="padding: 0 10% 0 10%; font-size: 2rem">
+                    {{ ckeditor.load() }}
+                    {{ ckeditor.config(name='description') }}
+                    {{ form.description }}
+                </p>
+                <h1 class="fw-bold text-center mt-5">Parts</h1>
+                <div class="row row-cols-sm-1 row-cols-md-2 row-cols-lg-3">
+                    {% for category in categories %}
+                    <div class="col d-flex justify-content-center mt-3 mb-3">
+                        <button type="button" class="btn btn-lg btn-outline-dark" style="width:100%; display: block;"
+                                data-bs-toggle="modal"
+                                data-bs-target="#Modal{{''.join(category.name.split(' '))}}">Select
+                            {{category.name}}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center">
+                    <div class="text-danger m-3">{{ wtf.form_errors(form) }}</div>
+                    {{ wtf.form_field(form.submit,button_map={'submit': 'btn btn-dark btn-lg'}, value='Update part') }}
+                </div>
+            </div>
+        </div>
+        {% include "footer.html" %}
+    </section>
+    <input type="hidden" name="selected_parts" id="selectedParts" value="{{parts}}">
+</form>
+
+
+<script>
+    $(document).ready(function () {
+      const selectedParts = "{{parts}}".split(";");
+      for (let i = 0; i < selectedParts.length; i++){
+          $('[data-bs-target="#Modal'+selectedParts[i].split("_")[0]+'"]').removeClass("btn-outline-dark").addClass("btn-success");
+          $('[data-value='+selectedParts[i]+']').removeClass("btn-dark").addClass("btn-primary").text("Selected").attr("disabled", true);
+      }
+
+      const fileInput = $('#images');
+      console.log(fileInput[0].files);
+      const previewImage = $('#upload_image');
+
+      $(".SearchPart").on("input", function () {
+        const searchInput = $(this);
+        const value = searchInput.val().toLowerCase();
+
+        const modal = searchInput.closest(".modal");
+
+        if (modal.length === 0) {
+          return;
+        }
+
+        const part_cards = modal.find(".card");
+
+        part_cards.each(function () {
+          const part = $(this);
+          const part_data = part.find('[data-id="part-info"]');
+
+          const isVisible = part_data.text().toLowerCase().replace(/\s+/g, ' ').trim().includes(value);
+          if (isVisible) {
+            part.show();
+          } else {
+            part.hide();
+          }
+        });
+      });
+
+      $('[title="select_part"]').on("click", function () {
+        const clickedButton = $(this);
+        const modal = clickedButton.closest('.modal');
+        const buttonValue = clickedButton.data("value");
+
+        modal.find('[title="select_part"]').removeClass("btn-primary").addClass("btn-dark").text("Select").attr("disabled", false);
+        clickedButton.removeClass("btn-dark").addClass("btn-primary").text("Selected").attr("disabled", true);
+        $('[data-bs-target="#Modal'+buttonValue.split("_")[0]+'"]').removeClass("btn-outline-dark").addClass("btn-success");
+
+
+        for (let i = 0; i < selectedParts.length; i++) {
+            if(selectedParts[i].split("_")[0].includes(buttonValue.split("_")[0])){
+                selectedParts.splice(i, 1);
+            }
+        }
+        selectedParts.push(buttonValue);
+
+        $("#selectedParts").val(selectedParts.join(";"));
+      });
+
+      $("form").submit(function(event) {
+        $(".text-danger").remove();
+
+        if (selectedParts.length != {{categories|length}}) {
+          displayError("You have to select all parts!");
+        }
+        const fileInput = $("#images");
+
+<!--        if (fileInput[0].files.length === 0) {-->
+<!--          displayError("You have to upload at least one image!");-->
+<!--        } else {-->
+<!--            const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];-->
+
+<!--            const files = fileInput[0].files;-->
+<!--            let validFile = false;-->
+
+<!--            for (let i = 0; i < files.length; i++) {-->
+<!--                if (allowedImageTypes.includes(files[i].type)) {-->
+<!--                    validFile = true;-->
+<!--                    break;-->
+<!--                }-->
+<!--            }-->
+
+<!--            if (!validFile) {-->
+<!--                displayError("Uploaded file is not an image.");-->
+<!--            }-->
+<!--        }-->
+
+        if ($(".text-danger").length > 0) {
+          event.preventDefault();
+          return;
+        }
+      });
+
+      function displayError(message) {
+        const errorElement = $("<p>").addClass("text-danger text-center").text(message);
+        $("#submit").before(errorElement);
+      }
+
+      fileInput.on('change', function () {
+            const files = this.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    previewImage.attr('src', e.target.result);
+                    previewImage.attr('style', 'width: 800px; height: 400px; object-fit: contain;');
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.attr('src', 'https://endlessicons.com/wp-content/uploads/2012/12/add-icon-614x460.png');
+                previewImage.attr('style', 'width: 800px; height: 400px; object-fit: cover;');
+            }
+        });
+    });
+
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block head %}
+{% include "header.html" %}
+{% endblock %}
+
+{% block content %}
+<form id="add-part" method="POST" action="{{ url_for('add_part') }}" enctype="multipart/form-data">
+    <section class="vh-100 gradient-custom">
+        <div class="container py-5">
+            <div class="row d-flex justify-content-center h-100">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form, hiddens="only") }}
+                {{form.images(class="upload-img", style="display: none")}}
+                <div class="col-6">
+                    <h5 class="fw-bold mb-2 text-center mt-2">Select images:</h5>
+                    <label class="btn" for="{{ form.images.id }}"><img
+                            src="https://endlessicons.com/wp-content/uploads/2012/12/add-icon-614x460.png"
+                            class="img-thumbnail" style="width: 800px; height: 400px; object-fit: cover;"
+                            id="upload_image"></label>
+                </div>
+                <div class="col-6">
+                    <h2 class="fw-bold mb-2 text-uppercase text-center">{{form.name.label}}</h2>
+                    <h2 class="fw-bold mb-2 text-uppercase text-center">{{form.name}}</h2>
+
+                    <h2 class="fw-bold mb-2 text-uppercase text-center">{{form.category.label}}</h2>
+                    <h2 class="fw-bold mb-2 text-uppercase text-center">{{form.category}}</h2>
+
+                    <h3 class="fw-bold mb-2 text-uppercase text-center mt-5">Price: {{form.price(size=5)}}$</h3>
+                </div>
+
+                <div class="row d-flex justify-content-center">
+                    <h1 class="fw-bold text-center mt-5">Part characteristics</h1>
+                </div>
+
+                <div class="characteristics-wrapper">
+                    <div class="row w-50" style="margin: auto; display: block;">
+                        <div id="input-wrapper" class="row ps-5 pe-5">
+                            <div class="col-6 text-center">
+                                <h4>Name</h4>
+                            </div>
+                            <div class="col-6 text-center">
+                                <h4>Value</h4>
+                            </div>
+                            <div class="col-6 d-flex justify-content-center mb-4">
+                                <select class="c-select" name="c_name[]" required>
+                                    {% for i in range(data|length) %}
+                                    <option value="{{data[i]}}">{{ data[i] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6 d-flex justify-content-center mb-4">
+                                <input type="text" name="c_value[]" value="" required/>
+                                <a class="add-input" title="Add input"><i
+                                        class="fa-solid fa-plus ms-1 mt-2" style="color: #3c4453;"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-danger m-3">{{ wtf.form_errors(form) }}</div>
+                        {{ wtf.form_field(form.submit,button_map={'submit': 'btn btn-dark btn-lg'}) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "footer.html" %}
+    </section>
+</form>
+<script type="text/javascript">
+    $(document).ready(function() {
+    const fileInput = $('#images');
+    const previewImage = $('#upload_image');
+
+    var data = {{ data|safe }};
+    var max_len = data.length - 1;
+
+    function updateSelectOptions() {
+        $('.c-select').each(function() {
+            var selectedValues = [];
+
+            $(this).find('option').prop('disabled', false);
+
+            $('.c-select').not(this).each(function() {
+                var value = $(this).val();
+                if (value !== null) {
+                    selectedValues.push(value);
+                }
+            });
+
+            $(this).find('option').each(function() {
+                var thisValue = $(this).val();
+
+                if (thisValue !== null) {
+                    for (var i = 0; i < selectedValues.length; i++) {
+                        if (thisValue === selectedValues[i]) {
+                            $(this).prop('disabled', true);
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    $(document).on('click', '.add-input', function(e) {
+        var input_wrapper = $("#input-wrapper");
+        var current_len = input_wrapper.find('.c-select').length;
+        if (current_len < max_len) {
+            current_len += 1;
+
+            var selectDiv = $("<div>").addClass("col-6 d-flex justify-content-center mb-4");
+            input_wrapper.append(selectDiv);
+
+            var selectList = $("<select>").addClass("c-select").attr({
+                "name": "c_name[]",
+                "required": true
+            });
+            selectDiv.append(selectList);
+
+            $.each(data, function(index, value) {
+                var option = $("<option>").val(value).text(value);
+                selectList.append(option);
+            });
+
+            var textDiv = $("<div>").addClass("col-6 d-flex justify-content-center mb-4");
+            input_wrapper.append(textDiv);
+            textDiv.append('<input type="text" name="c_value[]" value="" required/>');
+            textDiv.append('<a class="remove-input" title="Remove input"><i class="fa-solid fa-minus ms-1 mt-2" style="color: #3c4453;"></i></a>');
+
+            updateSelectOptions();
+        }
+    });
+
+    $(document).on('click', '.remove-input', function(e) {
+        var removedSelect = $(this).closest('div').prev('div').find('select.c-select');
+        var value = removedSelect.val();
+        if (!data.includes(value)) {
+            data.push(value);
+        }
+        e.preventDefault();
+        $(this).closest('div').prev('div').remove();
+        $(this).closest('div').remove();
+
+        updateSelectOptions();
+    });
+
+    $(document).on('change', '.c-select', function() {
+        updateSelectOptions();
+    });
+
+    $("form").submit(function(event) {
+        $(".text-danger").remove();
+
+        const fileInput = $("#images");
+
+        if (fileInput[0].files.length === 0) {
+          displayError("You have to upload at least one image!");
+        }
+
+        if ($(".text-danger").length > 0) {
+          event.preventDefault();
+          return;
+        }
+      });
+
+      function displayError(message) {
+        const errorElement = $("<p>").addClass("text-danger text-center").text(message);
+        $("#submit").before(errorElement);
+      }
+
+      fileInput.on('change', function () {
+            const files = this.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    previewImage.attr('src', e.target.result);
+                    previewImage.attr('style', 'width: 800px; height: 400px; object-fit: contain;');
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.attr('src', 'https://endlessicons.com/wp-content/uploads/2012/12/add-icon-614x460.png');
+                previewImage.attr('style', 'width: 800px; height: 400px; object-fit: cover;');
+            }
+        });
+});
+
+</script>
+{% endblock %}

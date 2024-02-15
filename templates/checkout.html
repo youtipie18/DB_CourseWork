@@ -1,0 +1,91 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block head %}
+{% include "header.html" %}
+{% endblock %}
+
+{% block content %}
+<section class="vh-100 gradient-custom">
+    <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                    <div class="card-body p-5 text-center">
+
+                        <div class="mb-md-5 mt-md-4">
+
+                            <h2 class="fw-bold mb-2 text-uppercase">Checkout</h2>
+
+                            {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                            {% for message in messages %}
+                            <p class="text-danger">{{ message }}</p>
+                            {% endfor %}
+                            {% endif %}
+                            {% endwith %}
+
+                            <div class="my-4">
+                                <form method="POST" id="checkoutForm">
+                                    {{ form.hidden_tag() }}
+                                    <label for="{{ form.phone_number.id }}">{{ form.phone_number.label }}:</label>
+                                    {{ form.phone_number(class="form-control") }}
+                                    <br>
+                                    <label for="{{ form.address.id }}">{{ form.address.label }}:</label>
+                                    {{ form.address(class="form-control") }}
+                                    <br>
+                                    <label for="{{ form.country.id }}">{{ form.country.label }}:</label>
+                                    {{ form.country(class="form-control") }}
+<!--                                    <br>-->
+<!--                                    <div id="pay_option" class="mt-2">-->
+<!--                                        <input type="hidden" id="payment_choice" name="pay_option" required>-->
+
+<!--                                        <button type="button" id="pay_on_receive" class="btn btn-outline-light">Pay on receive-->
+<!--                                        </button>-->
+
+<!--                                        or-->
+
+<!--                                        <button type="button" id="google_pay" class="btn btn-outline-light">Pay with <i-->
+<!--                                                class="fa-brands fa-google-pay fa-lg"></i></button>-->
+<!--                                    </div>-->
+                                    <br>
+                                    {{ form.submit(class="btn btn-outline-light btn-lg px-5 mt-3") }}
+                                </form>
+                            </div>
+                        </div>
+                        <div>
+                            <i><p class="mb-0">Shipping within the USA is free. For other countries shipping is $50</p>
+                            </i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% include "footer.html" %}
+<script>
+<!--    $(document).ready(function () {-->
+<!--        $("#checkoutForm").submit(function () {-->
+<!--            var paymentChoice = $("#payment_choice").val();-->
+<!--            if (!paymentChoice) {-->
+<!--                alert('Please select a payment option');-->
+<!--                return false;-->
+<!--            }-->
+<!--            return true;-->
+<!--        });-->
+<!--        $("#pay_on_receive").on("click", function () {-->
+<!--            $("#payment_choice").val("pay_on_receive");-->
+<!--            $("#pay_on_receive").removeClass("btn-outline-light").addClass("btn-outline-success");-->
+<!--            $("#google_pay").removeClass("btn-outline-success").addClass("btn-outline-light");-->
+<!--        });-->
+
+<!--        $("#google_pay").on("click", function () {-->
+<!--            $("#payment_choice").val("google_pay");-->
+<!--            $("#google_pay").removeClass("btn-outline-light").addClass("btn-outline-success");-->
+<!--            $("#pay_on_receive").removeClass("btn-outline-success").addClass("btn-outline-light");-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
+{% endblock %}
